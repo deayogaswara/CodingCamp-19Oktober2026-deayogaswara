@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A personal productivity dashboard with a focus timer, to-do list, and quick links." />
+    <title>Life Dashboard</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <!--
+    Default theme is "light" set here in HTML.
+    JavaScript reads localStorage on load and updates data-theme
+    as early as possible, but because script.js is deferred a brief
+    flash of the light theme is possible on first load for users who
+    previously selected dark mode. This is an accepted tradeoff for
+    keeping a single external JS file with no inline scripts.
+  -->
+  <body data-theme="light">
+
+    <!-- ============================================================
+         HEADER — theme toggle only
+         ============================================================ -->
+    <header class="site-header" role="banner">
+      <div class="header-inner">
+        <span class="site-title">Life Dashboard</span>
+
+        <!-- Theme toggle: aria-pressed reflects current state (JS updates it) -->
+        <button
+          id="theme-toggle"
+          class="btn-icon theme-toggle"
+          type="button"
+          aria-label="Switch to dark mode"
+          aria-pressed="false"
+        >
+          <!-- Sun icon — visible in dark mode (switch TO light) -->
+          <svg class="icon icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1"  x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1"  y1="12" x2="3"  y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+          </svg>
+          <!-- Moon icon — visible in light mode (switch TO dark) -->
+          <svg class="icon icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+
+      <!-- ============================================================
+           HERO SECTION — clock, date, greeting
+           ============================================================ -->
+      <section
+        id="hero"
+        class="hero-section"
+        aria-label="Dashboard overview"
+      >
+        <!-- Visually hidden h1 gives the page a proper document title
+             for screen readers without disrupting the visual design. -->
+        <h1 class="sr-only">Life Dashboard</h1>
+        <!-- Live clock: <time> element keeps semantic meaning.
+             datetime attribute is kept current by JavaScript. -->
+        <time id="clock-display" class="clock-display" datetime="" aria-live="off" aria-atomic="true">
+          00:00:00 AM
+        </time>
+
+        <!-- Current date: aria-live="polite" so screen readers
+             announce the date once on load, then stay quiet. -->
+        <p id="date-display" class="date-display" aria-live="polite" aria-atomic="true">
+          Loading date…
+        </p>
+
+        <!-- Greeting line with inline name editing.
+             aria-live="polite" announces name changes to screen readers. -->
+        <p id="greeting-text" class="greeting-text" aria-live="polite">
+          <span id="greeting-prefix">Good morning</span>,&nbsp;<span
+            id="greeting-name"
+            class="greeting-name"
+          >Friend</span>
+          <!-- Edit name button: aria-label describes the action clearly -->
+          <button
+            id="edit-name-btn"
+            class="btn-icon edit-name-btn"
+            type="button"
+            aria-label="Edit your name"
+          >
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </p>
+
+        <!-- Inline name input — hidden by default, shown when editing -->
+        <div id="name-edit-form" class="name-edit-form" hidden>
+          <label for="name-input" class="sr-only">Your name</label>
+          <input
+            id="name-input"
+            class="name-input"
+            type="text"
+            maxlength="40"
+            placeholder="Enter your name"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="save-name-btn" class="btn btn-primary" type="button">
+            Save
+          </button>
+          <button id="cancel-name-btn" class="btn btn-ghost" type="button">
+            Cancel
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           MAIN GRID — timer + todo side by side on desktop
+           ============================================================ -->
+      <div class="main-grid">
+
+        <!-- ----------------------------------------------------------
+             FOCUS TIMER CARD
+             ---------------------------------------------------------- -->
+        <section
+          id="timer-section"
+          class="card timer-card"
+          aria-labelledby="timer-heading"
+        >
+          <h2 id="timer-heading" class="card-heading">Focus Timer</h2>
+
+          <!--
+            Progress ring using CSS conic-gradient.
+            The outer div is the track (full ring); the inner div is the
+            progress fill. JavaScript updates --progress custom property
+            (0 to 1) on .timer-ring to animate the ring.
+            aria-hidden keeps this purely decorative for screen readers.
+          -->
+          <!--
+            .timer-ring-wrapper is the positioning context.
+            .timer-ring (aria-hidden) is the decorative conic-gradient donut.
+            .timer-display-inner is a sibling OUTSIDE .timer-ring so the
+            mask-image on the ring does not clip the countdown digits.
+          -->
+          <div class="timer-ring-wrapper">
+            <div class="timer-ring" id="timer-ring" style="--progress: 1;" aria-hidden="true"></div>
+            <div class="timer-display-inner">
+              <span
+                id="timer-display"
+                class="timer-display"
+                role="timer"
+                aria-live="off"
+                aria-atomic="true"
+              >25:00</span>
+            </div>
+          </div>
+
+          <!-- Screen-reader-only live region for state changes only
+               (e.g. "Timer started", "Timer paused", "Time's up!") -->
+          <p id="timer-sr-announce" class="sr-only" aria-live="assertive" aria-atomic="true"></p>
+
+          <!-- Visible status label -->
+          <p id="timer-status" class="timer-status">Ready</p>
+
+          <!-- Timer controls -->
+          <div class="timer-controls" role="group" aria-label="Timer controls">
+            <button id="timer-start" class="btn btn-primary" type="button">
+              Start
+            </button>
+            <button id="timer-stop" class="btn btn-secondary" type="button" disabled>
+              Stop
+            </button>
+            <button id="timer-reset" class="btn btn-ghost" type="button" disabled>
+              Reset
+            </button>
+          </div>
+        </section>
+
+        <!-- ----------------------------------------------------------
+             TO-DO LIST CARD
+             ---------------------------------------------------------- -->
+        <section
+          id="todo-section"
+          class="card todo-card"
+          aria-labelledby="todo-heading"
+        >
+          <h2 id="todo-heading" class="card-heading">To-Do List</h2>
+
+          <!-- Add task form -->
+          <form id="todo-form" class="todo-form" novalidate>
+            <label for="todo-input" class="sr-only">New task name</label>
+            <input
+              id="todo-input"
+              class="text-input"
+              type="text"
+              placeholder="Add a task…"
+              maxlength="200"
+              autocomplete="off"
+              spellcheck="false"
+              aria-describedby="todo-error"
+            />
+            <button class="btn btn-primary" type="submit">
+              Add
+            </button>
+          </form>
+
+          <!-- Inline error message for todo input (duplicate / empty) -->
+          <p id="todo-error" class="input-error" aria-live="polite" hidden></p>
+
+          <!-- Dedicated SR status region: JS writes short messages here
+               ("Task added", "Task deleted") instead of putting aria-live
+               on the whole list, which causes noisy or missed announcements
+               when the list is fully re-rendered. -->
+          <p id="todo-sr-status" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+
+          <!--
+            Task list rendered by JavaScript.
+            No aria-live here — announcements go through #todo-sr-status.
+          -->
+          <ul
+            id="todo-list"
+            class="todo-list"
+            aria-label="Tasks"
+          >
+            <!-- JavaScript renders task items here.
+                 Empty state message is also injected by JS. -->
+          </ul>
+        </section>
+
+      </div><!-- /.main-grid -->
+
+      <!-- ============================================================
+           QUICK LINKS CARD
+           ============================================================ -->
+      <section
+        id="links-section"
+        class="card links-card"
+        aria-labelledby="links-heading"
+      >
+        <h2 id="links-heading" class="card-heading">Quick Links</h2>
+
+        <!-- Add link form -->
+        <form id="links-form" class="links-form" novalidate>
+          <label for="link-name-input" class="sr-only">Website name</label>
+          <input
+            id="link-name-input"
+            class="text-input"
+            type="text"
+            placeholder="Site name"
+            maxlength="50"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="links-error"
+          />
+
+          <label for="link-url-input" class="sr-only">Website URL</label>
+          <input
+            id="link-url-input"
+            class="text-input"
+            type="url"
+            placeholder="https://example.com"
+            maxlength="2000"
+            autocomplete="off"
+            spellcheck="false"
+            aria-describedby="links-error"
+          />
+
+          <button class="btn btn-primary" type="submit">
+            Add Link
+          </button>
+        </form>
+
+        <!-- Inline error message for link form -->
+        <p id="links-error" class="input-error" aria-live="polite" hidden></p>
+
+        <!-- Dedicated SR status region for link mutations -->
+        <p id="links-sr-status" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+
+        <!--
+          Links list rendered by JavaScript.
+          No aria-live here — announcements go through #links-sr-status.
+        -->
+        <ul
+          id="links-list"
+          class="links-list"
+          aria-label="Saved quick links"
+        >
+          <!-- JavaScript renders link items here.
+               Empty state message is also injected by JS. -->
+        </ul>
+      </section>
+
+    </main>
+
+    <!-- sr-only utility is used by multiple elements above;
+         it is defined in CSS, not here. -->
+
+    <!--
+      script.js is deferred so it runs after the DOM is fully parsed.
+      This means JS can safely query any element by ID without
+      waiting for a DOMContentLoaded event, though we still use it
+      as a best practice.
+    -->
+    <script src="js/script.js" defer></script>
+  </body>
+</html>

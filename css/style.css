@@ -1,0 +1,1162 @@
+/* =============================================================
+   Life Dashboard — css/style.css
+   Single stylesheet. No external libraries or additional files.
+
+   Table of contents
+   -----------------
+   1.  Custom properties (design tokens)
+   2.  Reset and base
+   3.  Utility: .sr-only and :focus-visible
+   4.  Layout — header, main wrapper, two-column grid
+   5.  Hero section (clock, date, greeting, name edit)
+   6.  Cards — shared base styles
+   7.  Focus Timer card and conic-gradient ring
+   8.  To-Do List card
+   9.  Quick Links card
+   10. Shared: buttons (.btn, .btn-icon, .btn-task-action)
+   11. Shared: text inputs (.text-input)
+   12. Dark theme overrides  [data-theme="dark"]
+   13. Responsive — tablet ≤840px, mobile ≤600px, tiny ≤380px
+   14. Reduced-motion overrides
+   ============================================================= */
+
+
+/* =============================================================
+   1. CUSTOM PROPERTIES
+   Every colour, space, and radius is a token.
+   Dark theme only redefines the tokens that change.
+   ============================================================= */
+:root {
+  /* Raw palette */
+  --violet-50:  #f5f3ff;
+  --violet-100: #ede9fe;
+  --violet-200: #ddd6fe;
+  --violet-300: #c4b5fd;
+  --violet-400: #a78bfa;
+  --violet-500: #8b5cf6;
+  --violet-600: #7c3aed;
+  --violet-700: #6d28d9;
+  --violet-800: #5b21b6;
+  --violet-900: #4c1d95;
+  --indigo-900: #312e81;
+  --neutral-50:  #fafafa;
+  --neutral-100: #f4f4f5;
+  --neutral-200: #e4e4e7;
+  --neutral-300: #d4d4d8;
+  --neutral-400: #a1a1aa;
+  --neutral-500: #71717a;
+  --neutral-600: #52525b;
+  --neutral-700: #3f3f46;
+  --neutral-800: #27272a;
+  --neutral-900: #18181b;
+  --white: #ffffff;
+  --red-400: #f87171;
+  --red-600: #dc2626;
+
+  /* Semantic colour tokens — light theme values */
+  --bg-from:            #312e81;   /* indigo-900 */
+  --bg-to:              #4c1d95;   /* violet-900 */
+  --card-bg:            rgba(255, 255, 255, 0.84);
+  --card-border:        rgba(255, 255, 255, 0.55);
+  --card-shadow:        rgba(49, 46, 129, 0.18);
+  --text-primary:       var(--neutral-900);
+  --text-secondary:     var(--neutral-600);
+  --text-muted:         var(--neutral-400);
+  --text-on-hero:       var(--white);
+  --heading-color:      var(--neutral-800);
+  --accent:             var(--violet-600);
+  --accent-hover:       var(--violet-700);
+  --accent-subtle:      var(--violet-100);
+  --divider:            var(--neutral-200);
+  --input-bg:           var(--white);
+  --input-border:       var(--neutral-300);
+  --input-focus:        var(--violet-500);
+  --input-text:         var(--neutral-900);
+  --btn-ghost-text:     var(--neutral-600);
+  --btn-ghost-hover:    var(--neutral-100);
+  --btn-secondary-text: var(--violet-600);
+  --error-color:        var(--red-600);
+  --error-bg:           rgba(220, 38, 38, 0.06);
+  --complete-text:      var(--neutral-400);
+  --complete-bg:        var(--neutral-100);
+  --task-bg:            var(--neutral-50);
+  --task-border:        var(--neutral-200);
+  --task-hover-bg:      var(--violet-50);
+  --task-hover-border:  var(--violet-200);
+  --ring-track:         rgba(139, 92, 246, 0.18);
+  --ring-fill:          var(--violet-500);
+  --pill-bg:            var(--violet-50);
+  --pill-border:        var(--violet-200);
+  --pill-hover-bg:      var(--violet-100);
+  --pill-text:          var(--violet-700);
+  --scrollbar-thumb:    var(--violet-200);
+
+  /* Timer ring geometry */
+  --ring-size:      clamp(156px, 26vw, 196px);
+  --ring-thickness: clamp(10px, 1.8vw, 13px);
+
+  /* Spacing scale (multiples of 4px) */
+  --sp-1: 0.25rem;   /*  4px */
+  --sp-2: 0.5rem;    /*  8px */
+  --sp-3: 0.75rem;   /* 12px */
+  --sp-4: 1rem;      /* 16px */
+  --sp-5: 1.25rem;   /* 20px */
+  --sp-6: 1.5rem;    /* 24px */
+  --sp-8: 2rem;      /* 32px */
+  --sp-10: 2.5rem;   /* 40px */
+  --sp-12: 3rem;     /* 48px */
+
+  /* Border radii */
+  --r-sm:   0.375rem;
+  --r-md:   0.75rem;
+  --r-lg:   1.125rem;
+  --r-xl:   1.5rem;
+  --r-full: 9999px;
+
+  /* Typography */
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          Helvetica, Arial, sans-serif, 'Apple Color Emoji';
+  --fs-xs:  0.75rem;
+  --fs-sm:  0.875rem;
+  --fs-md:  1rem;
+  --fs-lg:  1.125rem;
+  --fs-xl:  1.375rem;
+  --fs-2xl: 1.75rem;
+  --fs-3xl: 2.5rem;
+  --fs-4xl: 3.5rem;
+
+  /* Transitions */
+  --t-fast:   150ms ease;
+  --t-normal: 240ms ease;
+}
+
+
+/* =============================================================
+   2. RESET AND BASE
+   ============================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  color: var(--text-primary);
+  /* Fixed violet/indigo gradient fills the whole viewport */
+  background: linear-gradient(
+    135deg,
+    var(--bg-from) 0%,
+    var(--bg-to)   100%
+  );
+  background-attachment: fixed;
+  min-height: 100dvh;
+}
+
+/* Normalise SVG rendering */
+svg {
+  display: block;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
+
+ul {
+  list-style: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* =============================================================
+   3. UTILITY — .sr-only and :focus-visible
+   ============================================================= */
+
+/*
+  Visually hidden but still accessible to screen readers.
+  Never use display:none or visibility:hidden for content that
+  assistive tech should reach — those remove it entirely.
+*/
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+  :focus-visible fires only during keyboard navigation, not on
+  mouse clicks, so buttons look clean when clicked but still
+  show a clear ring when tabbed to.
+*/
+:focus-visible {
+  outline: 3px solid var(--violet-400);
+  outline-offset: 3px;
+  border-radius: var(--r-sm);
+}
+
+
+/* =============================================================
+   4. LAYOUT — header, main wrapper, two-column grid
+   ============================================================= */
+
+/* Sticky header — glass effect over the gradient */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(49, 46, 129, 0.48);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--sp-3) var(--sp-6);
+}
+
+.site-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+/* Main content column */
+#main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-6) var(--sp-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+/*
+  Two-column grid: timer (narrower) beside to-do (wider).
+  38% / 1fr gives the timer card a comfortable fixed ratio
+  while the to-do card takes the remaining space.
+*/
+.main-grid {
+  display: grid;
+  grid-template-columns: 38% 1fr;
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+
+/* =============================================================
+   5. HERO SECTION — clock, date, greeting, name-edit form
+   ============================================================= */
+.hero-section {
+  text-align: center;
+  padding: var(--sp-10) var(--sp-4) var(--sp-6);
+  color: var(--text-on-hero);
+}
+
+/* Large tabular-nums clock — tabular-nums prevents width jitter
+   as narrow/wide digits alternate during the countdown */
+.clock-display {
+  display: block;
+  font-size: var(--fs-4xl);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.28);
+}
+
+.date-display {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-lg);
+  opacity: 0.85;
+  letter-spacing: 0.02em;
+}
+
+.greeting-text {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-xl);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.greeting-name {
+  font-weight: 700;
+  color: var(--violet-200);
+}
+
+/* Small pencil icon button next to the name */
+.edit-name-btn {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--r-full);
+  color: rgba(255, 255, 255, 0.78);
+  padding: var(--sp-1);
+  line-height: 0;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.edit-name-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+  color: var(--white);
+}
+
+/* Inline name edit form — hidden by default via HTML `hidden` attr */
+.name-edit-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-4);
+}
+
+/*
+  Fix: without this rule, `.name-edit-form { display: flex }` wins over
+  the UA stylesheet's `[hidden] { display: none }` in the CSS cascade
+  (both are 0-1-0 specificity; author stylesheet wins by source order).
+  Adding [hidden] raises specificity to 0-2-0, so the form is correctly
+  hidden when JS sets nameEditForm.hidden = true.
+*/
+.name-edit-form[hidden] {
+  display: none;
+}
+
+.name-input {
+  width: 200px;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-md);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.38);
+  border-radius: var(--r-md);
+  color: var(--white);
+  transition: border-color var(--t-fast), background var(--t-fast);
+}
+
+.name-input::placeholder {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: var(--violet-300);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+
+/* =============================================================
+   6. CARDS — shared base
+   Glass-like: semi-transparent white with backdrop blur.
+   ============================================================= */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--r-xl);
+  box-shadow:
+    0 4px 28px var(--card-shadow),
+    0 1px 4px rgba(0, 0, 0, 0.05);
+  padding: var(--sp-6);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.card-heading {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--heading-color);
+  margin-bottom: var(--sp-5);
+  letter-spacing: 0.01em;
+}
+
+/* Empty-state placeholder rendered by JS */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-8) var(--sp-4);
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+}
+
+
+/* =============================================================
+   7. FOCUS TIMER CARD + CONIC-GRADIENT RING
+   ============================================================= */
+.timer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* Subtle violet tint to distinguish the timer card */
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.90) 0%,
+    rgba(237, 233, 254, 0.84) 100%
+  );
+}
+
+/*
+  Wrapper is the positioning context for both the ring graphic and
+  the countdown text overlay. The ring and the text are siblings,
+  so the ring's mask-image cannot clip the text.
+*/
+.timer-ring-wrapper {
+  position: relative;
+  width: var(--ring-size);
+  height: var(--ring-size);
+  margin-bottom: var(--sp-4);
+}
+
+/*
+  The conic-gradient ring:
+
+  --progress (set inline via JS, defaults to 1) drives how much
+  of the circle is filled. 1 = full (timer just started / reset),
+  0 = empty (timer done).
+
+  conic-gradient sweeps from 0° to (progress × 360°) in the fill
+  colour, then the remainder in the track colour.
+
+  The mask-image punches a transparent hole in the centre, turning
+  the disc into a donut ring. The ring's thickness is controlled
+  by how far inward the transparent area extends.
+
+  The whole element is rotate(-90deg) so the arc starts at
+  12 o'clock instead of 3 o'clock.
+*/
+.timer-ring {
+  /* Fill the wrapper completely */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--r-full);
+
+  background: conic-gradient(
+    var(--ring-fill)  calc(var(--progress, 1) * 360deg),
+    var(--ring-track) 0deg
+  );
+
+  -webkit-mask-image: radial-gradient(
+    circle,
+    transparent calc(50% - var(--ring-thickness) - 1px),
+    black       calc(50% - var(--ring-thickness)),
+    black       50%,
+    transparent calc(50% + 1px)
+  );
+  mask-image: radial-gradient(
+    circle,
+    transparent calc(50% - var(--ring-thickness) - 1px),
+    black       calc(50% - var(--ring-thickness)),
+    black       50%,
+    transparent calc(50% + 1px)
+  );
+
+  transform: rotate(-90deg);
+  transition: background var(--t-normal);
+}
+
+/*
+  Overlay the countdown digits centered over the ring.
+  This is now a sibling of .timer-ring (not a child), so:
+  - no inherited rotation to undo
+  - the ring's mask-image cannot affect this element
+  pointer-events: none lets clicks pass through to the ring wrapper
+  without interfering.
+*/
+.timer-display-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.timer-display {
+  /* Reduced from var(--fs-3xl) = 2.5rem to 2.1rem (~16% smaller). */
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* Status text (Ready / Running… / Paused / Time's up!) */
+.timer-status {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--sp-5);
+  /* Reserve height so layout doesn't shift when text changes */
+  min-height: 1.5em;
+}
+
+.timer-status.is-done {
+  color: var(--accent);
+}
+
+.timer-controls {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+
+/* =============================================================
+   8. TO-DO LIST CARD
+   ============================================================= */
+
+/* Row: input + Add button */
+.todo-form {
+  display: flex;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.todo-form .text-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Error message (hidden by default via HTML `hidden` attr) */
+.input-error {
+  font-size: var(--fs-sm);
+  color: var(--error-color);
+  background: var(--error-bg);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--sp-2);
+}
+
+/* Scrollable task list */
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: var(--sp-1);
+}
+
+/* Subtle custom scrollbar (Webkit only) */
+.todo-list::-webkit-scrollbar       { width: 4px; }
+.todo-list::-webkit-scrollbar-track { background: transparent; }
+.todo-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--r-full);
+}
+
+/* Individual task row */
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--task-border);
+  background: var(--task-bg);
+  transition:
+    background  var(--t-fast),
+    border-color var(--t-fast),
+    opacity var(--t-fast);
+}
+
+.todo-item:hover {
+  background: var(--task-hover-bg);
+  border-color: var(--task-hover-border);
+}
+
+/* Completed task — dimmed, strikethrough applied to the name span */
+.todo-item.is-complete {
+  background: var(--complete-bg);
+  border-color: var(--task-border);
+  opacity: 0.70;
+}
+
+/* Custom checkbox using appearance: none */
+.todo-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--violet-400);
+  border-radius: var(--r-sm);
+  background: var(--white);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--t-fast), border-color var(--t-fast);
+}
+
+.todo-checkbox:checked {
+  background: var(--violet-500);
+  border-color: var(--violet-500);
+}
+
+/* CSS-drawn checkmark */
+.todo-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0px;
+  width: 5px;
+  height: 8px;
+  border: 2px solid var(--white);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+
+/* Task name text */
+.todo-name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-md);
+  color: var(--text-primary);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.is-complete .todo-name {
+  text-decoration: line-through;
+  color: var(--complete-text);
+}
+
+/* Inline edit input (JS swaps the name span for this) */
+.todo-edit-input {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-md);
+  padding: var(--sp-1) var(--sp-2);
+  border: 1.5px solid var(--input-focus);
+  border-radius: var(--r-sm);
+  background: var(--input-bg);
+  color: var(--input-text);
+  transition: box-shadow var(--t-fast);
+}
+
+.todo-edit-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.20);
+}
+
+/*
+  Edit + Delete button container.
+  Hidden on desktop until hover/focus-within; always visible on touch
+  (overridden in the mobile media query).
+*/
+.todo-actions {
+  display: flex;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--t-fast);
+}
+
+.todo-item:hover        .todo-actions,
+.todo-item:focus-within .todo-actions {
+  opacity: 1;
+}
+
+
+/* =============================================================
+   9. QUICK LINKS CARD
+   ============================================================= */
+
+/* Row: site-name input + URL input + Add Link button */
+.links-form {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-3);
+}
+
+.links-form .text-input {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Wrapping row of link pills */
+.links-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+/* Single link pill */
+.link-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
+  border-radius: var(--r-full);
+  padding: var(--sp-2) var(--sp-4);
+  transition:
+    background var(--t-fast),
+    border-color var(--t-fast),
+    transform var(--t-fast),
+    box-shadow var(--t-fast);
+}
+
+.link-item:hover {
+  background: var(--pill-hover-bg);
+  border-color: var(--violet-400);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.18);
+}
+
+/* The clickable anchor inside the pill */
+.link-anchor {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--pill-text);
+  border-radius: var(--r-sm);
+}
+
+/* Tiny external-link icon (SVG injected by JS) */
+.link-anchor .icon {
+  width: 11px;
+  height: 11px;
+  opacity: 0.65;
+}
+
+/* Delete button on each pill */
+.link-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: var(--sp-1);
+  line-height: 0;
+  border-radius: var(--r-full);
+  color: var(--neutral-400);
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.link-delete-btn:hover {
+  color: var(--red-400);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+
+/* =============================================================
+   10. SHARED BUTTONS
+   .btn — base
+   .btn-primary / .btn-secondary / .btn-ghost — variants
+   .btn-icon — icon-only (no text, no background by default)
+   .btn-task-action — edit/delete inside task rows
+   ============================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-5);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  border-radius: var(--r-md);
+  border: 1.5px solid transparent;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition:
+    background     var(--t-fast),
+    color          var(--t-fast),
+    border-color   var(--t-fast),
+    box-shadow     var(--t-fast),
+    transform      var(--t-fast),
+    opacity        var(--t-fast);
+}
+
+/* Solid violet — primary actions */
+.btn-primary {
+  background: var(--accent);
+  color: var(--white);
+  border-color: var(--accent);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  box-shadow: 0 3px 10px rgba(109, 40, 217, 0.30);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+/* Outlined violet — secondary actions */
+.btn-secondary {
+  background: transparent;
+  color: var(--btn-secondary-text);
+  border-color: var(--accent);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--accent-subtle);
+}
+
+/* Minimal — low-emphasis actions (Cancel, Reset) */
+.btn-ghost {
+  background: transparent;
+  color: var(--btn-ghost-text);
+  border-color: var(--divider);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--btn-ghost-hover);
+}
+
+/* Disabled state for all variants */
+.btn:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Icon-only button — used for theme toggle and edit-name */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: var(--sp-1);
+  border-radius: var(--r-full);
+  line-height: 0;
+  cursor: pointer;
+  color: inherit;
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Inline edit / delete buttons inside task rows */
+.btn-task-action {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: var(--sp-1);
+  border-radius: var(--r-sm);
+  line-height: 0;
+  color: var(--neutral-400);
+  cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+
+.btn-task-action:hover {
+  color: var(--accent);
+  background: var(--accent-subtle);
+}
+
+.btn-task-action.btn-delete:hover {
+  color: var(--red-600);
+  background: rgba(220, 38, 38, 0.07);
+}
+
+
+/* =============================================================
+   11. SHARED SVG ICON SIZING
+   ============================================================= */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Theme toggle icons are slightly larger */
+.theme-toggle .icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/*
+  Show sun or moon depending on active theme.
+  In light mode: show moon icon (clicking switches TO dark).
+  In dark mode:  show sun icon  (clicking switches TO light).
+*/
+[data-theme="light"] .icon-sun  { display: none;  }
+[data-theme="light"] .icon-moon { display: block; }
+[data-theme="dark"]  .icon-moon { display: none;  }
+[data-theme="dark"]  .icon-sun  { display: block; }
+
+
+/* =============================================================
+   12. SHARED TEXT INPUT
+   ============================================================= */
+.text-input {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--r-md);
+  background: var(--input-bg);
+  color: var(--input-text);
+  min-width: 0;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.text-input::placeholder {
+  color: var(--text-muted);
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+}
+
+/* Error state — JS adds this class when validation fails */
+.text-input.is-error {
+  border-color: var(--error-color);
+}
+
+.text-input.is-error:focus {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+
+/* =============================================================
+   13. DARK THEME OVERRIDES  [data-theme="dark"]
+   Only tokens and rules that differ from light mode are listed.
+   ============================================================= */
+[data-theme="dark"] {
+  --bg-from:            #0e0c2a;
+  --bg-to:              #1c1060;
+  --card-bg:            rgba(28, 24, 58, 0.82);
+  --card-border:        rgba(139, 92, 246, 0.18);
+  --card-shadow:        rgba(0, 0, 0, 0.50);
+  --text-primary:       #e8e6f4;
+  --text-secondary:     #a09fc0;
+  --text-muted:         #6a6888;
+  --heading-color:      var(--violet-200);
+  --accent:             var(--violet-400);
+  --accent-hover:       var(--violet-500);
+  --accent-subtle:      rgba(139, 92, 246, 0.16);
+  --divider:            rgba(255, 255, 255, 0.08);
+  --input-bg:           rgba(255, 255, 255, 0.06);
+  --input-border:       rgba(139, 92, 246, 0.28);
+  --input-focus:        var(--violet-400);
+  --input-text:         #e8e6f4;
+  --btn-ghost-text:     #a09fc0;
+  --btn-ghost-hover:    rgba(255, 255, 255, 0.06);
+  --btn-secondary-text: var(--violet-300);
+  --error-color:        var(--red-400);
+  --error-bg:           rgba(248, 113, 113, 0.10);
+  --complete-text:      #6a6888;
+  --complete-bg:        rgba(255, 255, 255, 0.04);
+  --task-bg:            rgba(255, 255, 255, 0.04);
+  --task-border:        rgba(255, 255, 255, 0.07);
+  --task-hover-bg:      rgba(139, 92, 246, 0.10);
+  --task-hover-border:  rgba(139, 92, 246, 0.30);
+  --ring-track:         rgba(139, 92, 246, 0.12);
+  --ring-fill:          var(--violet-400);
+  --pill-bg:            rgba(139, 92, 246, 0.12);
+  --pill-border:        rgba(139, 92, 246, 0.26);
+  --pill-hover-bg:      rgba(139, 92, 246, 0.22);
+  --pill-text:          var(--violet-300);
+  --scrollbar-thumb:    rgba(139, 92, 246, 0.30);
+}
+
+/* Dark-mode card gradient overrides (can't be done via tokens alone) */
+[data-theme="dark"] .timer-card {
+  background: linear-gradient(
+    160deg,
+    rgba(28, 24, 58, 0.90) 0%,
+    rgba(46, 36, 90, 0.82) 100%
+  );
+}
+
+[data-theme="dark"] .todo-checkbox {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--violet-400);
+}
+
+[data-theme="dark"] .todo-edit-input {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e8e6f4;
+  border-color: var(--violet-400);
+}
+
+[data-theme="dark"] .btn-task-action:hover {
+  background: rgba(139, 92, 246, 0.16);
+}
+
+[data-theme="dark"] .btn-task-action.btn-delete:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--red-400);
+}
+
+
+/* =============================================================
+   14. RESPONSIVE
+   Breakpoints:
+     ≤840px  tablet   — tighten the two-column grid
+     ≤600px  mobile   — single-column stack
+     ≤380px  tiny     — micro adjustments
+   ============================================================= */
+
+/* --- Tablet ≤840px --- */
+@media (max-width: 840px) {
+  #main-content {
+    padding: var(--sp-6) var(--sp-4) var(--sp-10);
+    gap: var(--sp-4);
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-4);
+  }
+
+  .clock-display {
+    font-size: var(--fs-3xl);
+  }
+}
+
+/* --- Mobile ≤600px — single column --- */
+@media (max-width: 600px) {
+  #main-content {
+    padding: var(--sp-4) var(--sp-3) var(--sp-8);
+    gap: var(--sp-4);
+  }
+
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clock-display {
+    font-size: var(--fs-2xl);
+  }
+
+  .date-display {
+    font-size: var(--fs-md);
+  }
+
+  .greeting-text {
+    font-size: var(--fs-lg);
+  }
+
+  .card {
+    padding: var(--sp-5);
+  }
+
+  .timer-controls {
+    gap: var(--sp-2);
+  }
+
+  .timer-controls .btn {
+    padding: var(--sp-2) var(--sp-4);
+    font-size: var(--fs-xs);
+  }
+
+  /* Stack links form vertically on mobile */
+  .links-form {
+    flex-direction: column;
+  }
+
+  .links-form .btn {
+    width: 100%;
+  }
+
+  /*
+    On touch devices hover doesn't work reliably, so task action
+    buttons must always be visible.
+  */
+  .todo-actions {
+    opacity: 1;
+  }
+
+  .name-input {
+    width: 160px;
+  }
+}
+
+/* --- Tiny ≤380px --- */
+@media (max-width: 380px) {
+  .clock-display {
+    font-size: 1.5rem;
+  }
+
+  .header-inner {
+    padding: var(--sp-2) var(--sp-4);
+  }
+
+  .card {
+    border-radius: var(--r-lg);
+    padding: var(--sp-4);
+  }
+}
+
+
+/* =============================================================
+   15. REDUCED-MOTION OVERRIDES
+   Users who enable "Reduce Motion" in their OS settings get
+   instant state changes instead of animations.
+   ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration:  0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Remove the lift effect on link pills */
+  .link-item:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
